@@ -1,6 +1,7 @@
-from pydoc import pager
+from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView
-from datetime import datetime
+from mainapp import models as mainapp_models
+import mainapp
 
 # Create your views here.
 
@@ -14,17 +15,39 @@ class NewsPageView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["news_qs"] = mainapp_models.News.objects.all()[:5]
+        return context
 
-        context['news_title'] = "ЗАГОЛОВОК"
-        context['news_preview'] = "description"
-        context['range'] = range(5)
-        context['datetime_obj'] = datetime.now()
+class NewsPageDetailView(TemplateView):
+    template_name = "mainapp/news_detail.html"
+
+    def get_context_data(self, pk=None, **kwargs):
+        context = super().get_context_data(pk=pk, **kwargs)
+        context["news_object"] = get_object_or_404(mainapp_models.News, pk=pk)
         return context
 
 
-class CoursesPageView(TemplateView):
+class CoursesListView(TemplateView):
     template_name = "mainapp/courses_list.html"
 
+    def get_context_data(self, **kwargs):
+        context = super(CoursesListView, self).get_context_data(**kwargs)
+        context["objects"] = mainapp_models.Courses.objects.all()[:7]
+        return context
+
+class CoursesDetailView(TemplateView):
+    template_name = "mainapp/courses_detail.html"
+
+    def get_context_data(self, pk=None, **kwargs):
+        context = super(CoursesDetailView, self).get_context_data(**kwargs)
+        context["course_object"] = get_object_or_404(mainapp_models.Courses, pk=pk)
+        context["lessons"] = mainapp_models.Lesson.objects.filter(
+            course=context["course_object"]
+        )
+        context["teacher"] = mainapp_models.CourseTeachers.objects.filter(
+            course=context["course_object"]
+        )
+        return context
 
 class ContactsPageView(TemplateView):
     template_name = "mainapp/contacts.html"
@@ -38,9 +61,9 @@ class LoginPageView(TemplateView):
     template_name = "mainapp/login.html"
 
 
-class NewsWithPaginatorView(NewsPageView):
+# class NewsWithPaginatorView(NewsPageView):
 
-    def get_context_data(self, page, **kwargs):
-        context = super().get_context_data(page=page, **kwargs)
-        context['page_num'] = page
-        return context
+#     def get_context_data(self, page, **kwargs):
+#         context = super().get_context_data(page=page, **kwargs)
+#         context['page_num'] = page
+#         return context
