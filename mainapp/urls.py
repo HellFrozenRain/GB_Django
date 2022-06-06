@@ -29,7 +29,7 @@ urlpatterns = [
     # courses
     path(
         "courses/",
-        cache_page(60)(views.CoursesListView.as_view()),
+        cache_page(60 * 5)(views.CoursesListView.as_view()),
         name="courses",
     ),
     path(
